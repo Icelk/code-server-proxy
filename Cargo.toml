@@ -8,6 +8,6 @@ edition = "2018"
 
 [dependencies]
 env_logger = "0.8.3"
-kvarn = { path = "kvarn", features = ["no-cache"] }
+kvarn = { path = "kvarn", default-features = false, features = ["no-cache", "https", "fs", "compression"] }
 kvarn_extensions = { path = "kvarn/kvarn_extensions", default-features = false, features = ["reverse-proxy"] }
 tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
