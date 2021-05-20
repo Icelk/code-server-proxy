@@ -1,5 +1,5 @@
 [package]
-name = "online-code-proxy"
+name = "code-server-proxy"
 version = "0.1.0"
 authors = ["Icelk <main@icelk.dev>"]
 edition = "2018"
