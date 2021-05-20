@@ -1,0 +1,13 @@
+[package]
+name = "online-code-proxy"
+version = "0.1.0"
+authors = ["Icelk <main@icelk.dev>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+env_logger = "0.8.3"
+kvarn = { path = "kvarn", features = ["no-cache"] }
+kvarn_extensions = { path = "kvarn/kvarn_extensions", default-features = false, features = ["reverse-proxy"] }
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
