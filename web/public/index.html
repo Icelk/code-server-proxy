@@ -5,54 +5,51 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Online programming environment</title>
+
+        <link rel="stylesheet" href="style.css" />
+        <script src="script.js" defer></script>
     </head>
     <body>
-        <h1>User services</h1>
-        <input
-            type="text"
-            name="name"
-            id="name"
-            placeholder="Enter your name!"
-            oninput="tryEnable(this, code, userFiles)"
-        />
-        <button
-            id="code"
-            disabled
-            onclick="to(`/code/?folder=/home/onlinecode/${userName.value}`)"
-        >
-            Online code editor
-        </button>
-        <button id="files" disabled onclick="to(`/files/${userName.value}/`)">
-            View your files
-        </button>
-        <h1>Backend services</h1>
-        <input
-            type="text"
-            name="port"
-            id="port"
-            placeholder="1945"
-            oninput="tryEnable(this, server)"
-        />
-        <button id="server" disabled onclick="to(`/server/${port.value}/`)">
-            Go to your backend server
-        </button>
-
-        <script>
-            const userName = document.getElementById("name")
-            const code = document.getElementById("code")
-            const userFiles = document.getElementById("files")
-            const port = document.getElementById("port")
-            const server = document.getElementById("server")
-
-            function tryEnable(input, ...buttons) {
-                let disabled = input.value.length == 0
-                buttons.forEach((button) => {
-                    button.disabled = disabled
-                })
-            }
-            function to(url) {
-                location.href = location.href.replace(/\/.*/g, url)
-            }
-        </script>
+        <div>
+            <h1>User services</h1>
+            <input
+                type="text"
+                name="name"
+                id="name"
+                placeholder="Enter your name!"
+                oninput="tryEnable(this, code, userFiles)"
+            />
+            <button
+                id="code"
+                disabled
+                onclick="to(`/code/?folder=/home/onlinecode/${lc(userName.value)}`)"
+            >
+                Online code editor
+            </button>
+            <button
+                id="files"
+                disabled
+                onclick="to(`/files/${lc(userName.value)}/`)"
+            >
+                View your files
+            </button>
+        </div>
+        <div>
+            <h1>Backend services</h1>
+            <input
+                type="number"
+                step="1"
+                min="1024"
+                max="65536"
+                name="port"
+                id="port"
+                placeholder="Numeric port"
+                oninput="tryEnable(this, server)"
+                style="width: 8em"
+            />
+            <button id="server" disabled onclick="to(`/server/${port.value}/`)">
+                Go to your backend server
+            </button>
+        </div>
     </body>
 </html>

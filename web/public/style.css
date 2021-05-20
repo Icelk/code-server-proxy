@@ -1,0 +1,15 @@
+:root {
+    height: 100%;
+
+    background-color: #0f0f0f;
+    color: #efefef;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-flow: column;
+    height: 75%;
+}
