@@ -7,9 +7,12 @@
 
 body {
     display: flex;
-    justify-content: center;
+    padding-top: 10rem;
     align-items: center;
-    text-align: center;
     flex-flow: column;
     height: 75%;
+    text-align: center;
+}
+body div {
+    max-width: 75%;
 }

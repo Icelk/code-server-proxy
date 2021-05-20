@@ -11,6 +11,20 @@
     </head>
     <body>
         <div>
+            <h1>Instructions</h1>
+            <p>
+                To edit code, type in your name and press 'Online code editor'.
+                If you wrote web code (e.g. HTML, JavaScript, CSS), duplicate
+                this tab and press 'View your files' and press on the file you
+                created.
+            </p>
+            <p>
+                If you wrote a backend (e.g. Rust, NodeJS) type in the port you
+                bound in your code under 'Backend Services' and press 'Go to
+                your server'.
+            </p>
+        </div>
+        <div>
             <h1>User services</h1>
             <input
                 type="text"
@@ -48,7 +62,7 @@
                 style="width: 8em"
             />
             <button id="server" disabled onclick="to(`/server/${port.value}/`)">
-                Go to your backend server
+                Go to your server
             </button>
         </div>
     </body>
