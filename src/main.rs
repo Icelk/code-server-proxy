@@ -42,7 +42,10 @@ async fn main() {
     // Mount all extensions to server
     let mut extensions = kvarn::Extensions::empty();
 
-    let proxy = ReverseProxy::base("/code", ReverseProxyConnection::Tcp(localhost(port)));
+    let proxy = ReverseProxy::base(
+        "/code",
+        static_connection(ReverseProxyConnection::Tcp(localhost(port))),
+    );
     proxy.mount(&mut extensions);
 
     // let index_data_path = Arc::clone(&data_path);
@@ -127,13 +130,69 @@ async fn main() {
         }),
     );
 
-    // let host = Host::new("icelk.dev", "cert.pem", "pk.pem", web_path, extensions)
-    // .expect("failed to construct host. Make sure the certificate and private key are in the current directory");
-    let host = Host::non_secure("icelk.dev", web_path, extensions);
+    {
+        let servers_dir = "/server/";
+        let path = Arc::new(servers_dir.to_owned());
+
+        let get_port = |req: &Request<_>, path: &str| {
+            let req_path = req.uri().path();
+            req_path
+                .strip_prefix(path)
+                .map(|path| {
+                    let mut i = path.split('/');
+                    (i.next(), i.next())
+                })
+                .and_then(|(first, second)| {
+                    second?;
+                    first
+                })
+                .and_then(|port| port.parse::<u16>().ok())
+        };
+
+        let when_path = Arc::clone(&path);
+        let when = Box::new(move |request: &FatRequest| get_port(request, &*when_path).is_some());
+
+        let con_path = Arc::clone(&path);
+        let connection: reverse_proxy::GetConnectionFn = Arc::new(move |request, _bytes| {
+            get_port(request, &*con_path)
+                .map(localhost)
+                .map(ReverseProxyConnection::Tcp)
+        });
+
+        let modify: reverse_proxy::ModifyRequestFn = Arc::new(move |request, _| {
+            let path = Arc::clone(&path);
+
+            // We know this is a good path and query; we've just removed the first x bytes.
+            let stripped_path = request.uri().path().get(path.as_str().len()..);
+            if let Some(stripped_path) = stripped_path {
+                let pos = stripped_path.find('/').map(|pos| pos + path.len());
+                if let Some(pos) = pos {
+                    let mut parts = request.uri().clone().into_parts();
+
+                    if let Some(short_path) = request.uri().path().get(pos..) {
+                        let short = uri::PathAndQuery::from_maybe_shared(Bytes::copy_from_slice(
+                            short_path.as_bytes(),
+                        ))
+                        .unwrap();
+                        parts.path_and_query = Some(short);
+                        parts.scheme = Some(uri::Scheme::HTTP);
+                        // For unwrap, see ↑
+                        let uri = Uri::from_parts(parts).unwrap();
+                        *request.uri_mut() = uri;
+                    }
+                }
+            }
+        });
+        ReverseProxy::new(when, connection, modify).mount(&mut extensions);
+    }
+
+    let host = Host::new("icelk.dev", "cert.pem", "pk.pem", web_path, extensions)
+    .expect("failed to construct host. Make sure the certificate and private key are in the current directory");
+    // let host = Host::non_secure("icelk.dev", web_path, extensions);
 
     let data = Arc::new(Data::new(host));
 
-    let descriptor = PortDescriptor::non_secure(100, data);
+    let descriptor = PortDescriptor::new(100, data);
 
     let shutdown = kvarn::run(vec![descriptor]).await;
 
