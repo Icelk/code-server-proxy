@@ -85,27 +85,28 @@ async fn main() {
             {
                 let entries =
                     return_status!(std::fs::read_dir(&base_path), StatusCode::NOT_FOUND, host);
-                let bytes = entries
-                    .fold(
-                        BytesMut::from(&b"<h1>Directory contents</h1>\n"[..]),
-                        |mut bytes, entry| {
-                            if let Ok(entry) = entry {
-                                let absolute_path = entry.path();
-                                if let Some(mut path) = absolute_path.to_str() {
-                                    if let Ok(relative) = absolute_path.strip_prefix(&base_path) {
-                                        if let Some(relative) = relative.to_str() {
-                                            path = relative;
-                                        }
-                                    }
-                                    let entry_str =
-                                        format!("<p><a href='{path}'>{path}</a></p>", path = path);
-                                    bytes.extend(entry_str.as_bytes());
+                let dir_header = &b"<h1>Directory contents</h1>"[..];
+                let mut bytes = entries.fold(BytesMut::from(dir_header), |mut bytes, entry| {
+                    if let Ok(entry) = entry {
+                        let absolute_path = entry.path();
+                        if let Some(mut path) = absolute_path.to_str() {
+                            if let Ok(relative) = absolute_path.strip_prefix(&base_path) {
+                                if let Some(relative) = relative.to_str() {
+                                    path = relative;
                                 }
                             }
-                            bytes
-                        },
-                    )
-                    .freeze();
+                            let entry_str =
+                                format!("<p><a href='{path}'>{path}</a></p>", path = path);
+                            bytes.extend(entry_str.as_bytes());
+                        }
+                    }
+                    bytes
+                });
+
+                if bytes == dir_header {
+                    bytes.extend(b"<p>Directory is empty.</p>");
+                }
+                let bytes = bytes.freeze();
                 return FatResponse::no_cache(Response::new(bytes));
             }
 
@@ -126,7 +127,7 @@ async fn main() {
         }),
     );
 
-    // let host = Host::new("icelk.dev", "cert.pem", "pk.pem", PathBuf::from("/non-existent"), extensions)
+    // let host = Host::new("icelk.dev", "cert.pem", "pk.pem", web_path, extensions)
     // .expect("failed to construct host. Make sure the certificate and private key are in the current directory");
     let host = Host::non_secure("icelk.dev", web_path, extensions);
 
