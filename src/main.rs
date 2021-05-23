@@ -98,8 +98,15 @@ async fn main() {
                                     path = relative;
                                 }
                             }
-                            let entry_str =
-                                format!("<p><a href='{path}'>{path}</a></p>", path = path);
+                            let is_dir = entry
+                                .file_type()
+                                .map_or(false, |file_type| file_type.is_dir());
+                            let extension = if is_dir { "/" } else { "" };
+                            let entry_str = format!(
+                                "<p><a href='{path}{ext}'>{path}{ext}</a></p>",
+                                ext = extension,
+                                path = path,
+                            );
                             bytes.extend(entry_str.as_bytes());
                         }
                     }
